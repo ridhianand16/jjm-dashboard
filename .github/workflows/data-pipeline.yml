@@ -1,0 +1,58 @@
+name: Automated Data Sync
+
+on:
+  schedule:
+    # Every Sunday at 00:00 UTC
+    - cron: '0 0 * * 0'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    name: Sync JJM District Data
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        # The sync script uses only Node built-ins + native fetch.
+        # npm ci is still needed so the repo stays in a valid state.
+        run: npm ci
+
+      - name: Run data sync script
+        # Calls the ejalshakti.gov.in JSON WebMethod directly — no browser needed.
+        # Fetches all 34 states and every district (~750 rows) in ~5 seconds.
+        run: node scripts/sync-data.js
+
+      - name: Check for data changes
+        id: diff
+        run: |
+          git diff --quiet data/jal_real_data.csv public/jal_data.csv \
+            && echo "changed=false" >> "$GITHUB_OUTPUT" \
+            || echo "changed=true"  >> "$GITHUB_OUTPUT"
+
+      - name: Commit and push updated CSV
+        if: steps.diff.outputs.changed == 'true'
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/jal_real_data.csv public/jal_data.csv
+          git commit -m "chore: automated weekly data sync [skip ci]"
+          git push origin HEAD:${{ github.ref_name }}
+
+      - name: No changes detected
+        if: steps.diff.outputs.changed == 'false'
+        run: echo "CSV unchanged — nothing to commit."

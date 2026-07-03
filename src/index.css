@@ -1,0 +1,78 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    color-scheme: dark;
+  }
+  body {
+    @apply bg-zinc-950 text-zinc-100 antialiased;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  }
+}
+
+@layer utilities {
+  /* Glassmorphism surface used across panels */
+  .glass {
+    @apply bg-zinc-900/40 border border-zinc-800/60 backdrop-blur-xl;
+  }
+  .glass-hover {
+    @apply transition-colors hover:border-zinc-700/70 hover:bg-zinc-900/60;
+  }
+
+  /* Emerald / indigo accent glows */
+  .glow-emerald {
+    box-shadow: 0 0 12px -2px rgb(16 185 129 / 0.5);
+  }
+  .glow-indigo {
+    box-shadow: 0 0 12px -2px rgb(99 102 241 / 0.5);
+  }
+
+  /* Tabular figures for data columns */
+  .nums {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum';
+  }
+}
+
+/* Sleek custom scrollbars */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgb(63 63 70 / 0.6);
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(82 82 91 / 0.8);
+  background-clip: content-box;
+}
+
+/* Fade / slide entrance for panels */
+@keyframes fadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-fade-slide {
+  animation: fadeSlideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Progress track shimmer */
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
